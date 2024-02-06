@@ -1,0 +1,26 @@
+import json
+import boto3
+
+def lambda_handler(event, context):
+    # Initialize the boto3 client
+    client = boto3.client('bedrock-runtime')
+
+    # Extract the prompt from the event
+    user_prompt = event['prompt']
+
+    # Create a Request Syntax - Get details from console and body should be json object
+    response = client.invoke_model(
+        accept='application/json',
+        body=json.dumps({"prompt": user_prompt, "temperature": 0.9, "max_tokens": 20}),
+        contentType='application/json',
+        modelId='cohere.command-text-v14'
+    )
+
+    # Convert Streaming Body to Byte and then Byte to String
+    response_byte = response['body'].read()
+    response_string = json.loads(response_byte)
+
+    return {
+        'statusCode': 200,
+        'body': response_string
+    }
